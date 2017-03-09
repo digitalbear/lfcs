@@ -103,6 +103,8 @@ type ls
 
 # to show file types
 ls -F
+# something/  is a directory
+# something@ is a symbolic link
 
 # to clear screen
 ctrl-l
@@ -146,3 +148,63 @@ which lsb_release
 # -q query, -f file
 rpm -qf /usr/bin/lsb_release
 rpm -qf $(which lsb_release)
+```
+
+### Working with Files
+
+### Working with Directories
+
+```sh
+mkdir one two
+touch one/file{1..5}
+cp -R one two
+# you may need to install tree command: sudo yum install tree
+tree two
+```
+```sh
+mkdir -m 777 d1
+mkdir -m 700 d2
+ls -ld d1 d2
+```
+
+### Working with Links
+
+Hard link count - the following outputs a number that identifies the number of subdirectories (minus 2 for the . and .. directories)
+```sh
+ls -ld /etc
+```
+
+Directory entry or inode number - filesystem metadata
+```sh
+ls -ldi /etc
+```
+
+```sh
+echo hello > f1
+ls -l f1 # shows hard link count of 1
+# create hard link between f1 and f2
+ln f1 f2
+ls -li f1 f2 # shows hard link count of 2 but identical inode numbers
+# create a symbolic link between f1 and f3
+ln -s f1 f3
+ls -li f1 f2 f3 # shows hard link count of 1 and a different inode number
+```
+Hard links can only be done with files in the same file system
+
+## Reading Files
+
+### Regular Expressions and grep
+
+```sh
+sudo yum install ntp
+cat /etc/ntp.conf
+wc -l !$ 
+# where !$ is last argument, i.e. /etc/ntp.conf
+cp !$ .
+grep '\bserver\b' ntp.conf
+# where \b is a word boundary
+# using extended grep -E
+grep -E 'ion$' /usr/share/dict/words
+grep -E '^po..ute$' /usr/share/dict/words
+grep -E '[aeiou]{5}' /usr/share/dict/words
+
