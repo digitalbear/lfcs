@@ -203,8 +203,71 @@ wc -l !$
 cp !$ .
 grep '\bserver\b' ntp.conf
 # where \b is a word boundary
-# using extended grep -E
+# using extended grep -E (for enhanced regular expressions)
 grep -E 'ion$' /usr/share/dict/words
 grep -E '^po..ute$' /usr/share/dict/words
 grep -E '[aeiou]{5}' /usr/share/dict/words
+```
+
+### Using sed to Edit Files
+
+```sh
+sed '/^#/d ; /^$/d' ntp.conf # will write to standard output
+sed -i '/^#/d ; /^$/d' ntp.conf # -i option will do an in-place edit
+```
+
+Create a function (in memory)
+```sh
+function clean_file {
+  sed -i '/^#/d ; /^$/d' $1 # -i option will do an in-place edit.  $1 is the first input parameter
+}
+clean_file ntp.conf
+```
+
+### Comparing Files
+
+```sh
+cp ntp.conf ntp.new
+echo new >> ntp.new
+diff ntp.conf ntp.new
+```
+
+Comparing binary files
+```sh
+md5sum /usr/bin/passwd
+# ssh to server2 and run the same command
+md5sum /usr/bin/passwd
+```
+
+To verify an installed package
+```sh
+rpm -V ntp
+```
+
+### Using Find
+
+*/usr ("UNIX system resources" directory)*
+
+```sh
+find /usr/share/doc -name '*.pdf'
+# is the same as including "-print" option
+find /usr/share/doc -name '*.pdf' -print 
+# execute a copy on the output from the find - to copy all docs to the current directory
+find /usr/share/doc -name '*.pdf' -exec cp {} . \;
+# use -iname for case-insensitive search
+find . -iname '*.pdf'
+# delete based on output from find
+find . -name '*.pdf' -delete
+# find file of type link
+find /etc -type l
+# limit to just that directory, not below
+find /etc -maxdepth 1 -type l
+# look for large files
+df -h /boot
+find /boot -size +20000k -type f
+find /boot -size +20000k -type f -exec du -h {} \;
+```
+
+## Using the vim Text Editor
+
 
