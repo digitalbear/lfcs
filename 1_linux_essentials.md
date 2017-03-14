@@ -270,4 +270,73 @@ find /boot -size +20000k -type f -exec du -h {} \;
 
 ## Using the vim Text Editor
 
+```sh
+touch newfile
+ls -l newfile
+stat newfile
+# create file with different date
+touch -d '10 February 2017' newfile
+```
+
+Search command history
+```sh
+!s # for last command starting with "s"
+```
+
+Using nano
+```sh
+sudo yum install -y nano
+nano newfile
+# use ctrl-x to exit and save
+```
+
+Learning vi
+```sh
+vimtutor # for a getting started tutorial
+(or)
+vi then :help # to get into the help menu
+```
+
+Setting options from within vi
+```
+:set number # turn on line numbering
+:set nonumber # turn off line numbering
+```
+
+Control file (~/.vimrc)
+```
+set showmode nonumber
+set hlsearch # highlight search
+set ai ts=4 expandtab # auto-indent, tab spaces = 4, tabs will be converted to spaces
+abbr _sh #!/bin/bash # abbreviate: type "_sh" then tab or esc and it will be replaced by the shebang
+nmap <C-N> :set invnumber<CR> # key mapping: ctrl-n => toggle line numbering
+```
+
+The 3 modes of vi:  
+1. command mode  
+2. insert mode  
+3. last line mode  
+
+Useful "last line mode" commands
+```
+:e! # discard changes but to not exit (like :q!)
+:6,8w newfile2 # write lines 6-8 to newfile2
+:r newfile2 (will copy in file at cursor)
+```
+
+Useful "command mode" commands
+```
+I - insert at beginning of line
+A - append at end of line
+p - paste after line
+P - paste before line
+u - undo
+g~~ - change case of whole line (Upper to lower and vice versa)
+gUU - change case to UPPER for whole line
+~ - change case of current character
+d$ - delete to end of line
+dG - delete to end of file
+```
+
+## Piping and Redirection
 
