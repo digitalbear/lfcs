@@ -340,3 +340,128 @@ dG - delete to end of file
 
 ## Piping and Redirection
 
+### Redirecting STDOUT
+
+Shell options - noclobber
+```sh
+set -o # to view
+set -o noclobber # to turn on noclobber
+# can be set in .bashrc logon script 
+set +o noclobber # to turn off
+```
+
+```sh
+df -h 1> file1 # using 1> to explicitly redirect to STDOUT (standard output)
+date +%F > file1 # throws an error because noclobber is on: -bash: file1: cannot overwrite existing file
+# but we can still append to the file
+date +%F >> file1
+# but we can override this using the |
+date +%F >| file1
+```
+
+Search command history
+```sh
+ctrl-r then start typing
+```
+
+### Redirecting STDERR
+
+```sh
+ls /etcw > err
+ls /etcw 2> err # throws an error because of noclobber
+ls /etcw 2>| err
+find /etc -type l 2> /dev/null
+# to include STDERR and STDOUT in same file use &
+find /etc -type l &> err.txt
+```
+
+### Redirecting STDIN
+
+```sh
+df -hlT > diskfree
+mail -s "Disk Free" tux < diskfree
+mail
+1 # to select message
+d # to delete message
+q # to quit
+```
+
+### HERE documents
+
+```sh
+cat > mynewfile <<END
+> this is a little file
+> that we can create
+> even with scripts
+> END
+cat mynewfile
+```
+
+### Command Pipelines
+
+Using Unamed Pipes
+```sh
+ls | ws -l
+head -n1 /etc/passwd
+cut -f7 -d: /etc/passwd
+cut -f7 -d: /etc/passwd | sort
+cut -f7 -d: /etc/passwd | sort | uniq
+cut -f7 -d: /etc/passwd | sort | uniq | wc -l
+```
+
+Named Pipes  
+```sh
+mkfifo mypipe
+ls -l !$
+# prw-rw-r--. 1 tux tux 0 Mar 14 23:27 mypipe
+# Usually a named pipe appears as a file, and generally processes attach to it for inter-process communication
+# Now, in a second terminal type the following - this will 'hang'
+ls > mypipe
+# back in the original terminal
+wc -l < mypipe
+# this will display data from the pipe and free up the second terminal
+```
+
+### Using the command tee
+
+Using the redirect to send output to a file means we will not see the output on the screen.  The tee command will do both
+```sh
+ls > f89
+ls | tee f89
+```
+
+## Archiving Files
+
+### The tar command
+```sh
+du -sh .
+tar -cvf /tmp/$USER.tar $HOME
+# view contents 
+cd /tmp
+tar -tf tux.tar
+# expand archive
+mkdir test
+cd test
+tar -xvf ../tux.tar
+```
+
+### Using Compression
+```sh
+gzip tux.tar
+file tux.tar.gz
+gunzip tux.tar.gz
+# using bunzip for better compression
+bzip2 tux.tar
+bunzip2 tux.tar.bz2
+```
+
+```sh
+# check the time it takes
+time tar -cvf tux.tar $HOME
+# include gzip into the tar command
+time tar -cvzf tux.tar.gz $HOME
+# include bzip2 into the tar command
+time tar -cvjf tux.tar.bz2 $HOME
+# to expand a zipped archive
+tar -xzf tux.tar.gz
+```
