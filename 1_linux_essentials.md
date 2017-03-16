@@ -465,3 +465,119 @@ time tar -cvjf tux.tar.bz2 $HOME
 # to expand a zipped archive
 tar -xzf tux.tar.gz
 ```
+
+### Working with CPIO
+```sh
+cd /usr/share/doc
+find -name '*.pdf'| cpio -o > /tmp/pdf.cpio
+cd
+mkdir pdf
+cd !$
+cpio -id < /tmp/pdf.cpio
+ls
+```
+
+Ramdisk
+```sh
+cd /tmp
+sudo cp /boot/initramfs-3.10.0-514.10.2.el7.x86_64.img .
+sudo chown tux. initramfs-3.10.0-514.10.2.el7.x86_64.img
+mkdir work
+cd work
+cpio -id < ../initramfs-3.10.0-514.10.2.el7.x86_64.img
+ls
+```
+
+### Imaging with dd (disk duplicator)
+
+From Virtualbox menu: Devices => Optical Drives => Choose Disk Image.  Selecting an ISO file will mount this on the cd-rom drive /dev/sr0
+```sh
+# take an image of the optical drive
+dd if=/dev/sr0 of=netinstall.iso
+# take an image of the boot disk
+dd if=/dev/sda1 of=boot.img
+# backup first 512 bytes of master boot record
+su -
+fdisk -l
+dd if=/dev/sda of=sda.mbr count=1 bs=512
+# overwrite master boot record...
+dd if=/dev/zero of=/dev/sda count=1 bs=512
+# conform that partition tables no longer exist
+fdisk -l
+# restore partition table
+dd if=sda.mbr of=/dev/sda
+```
+
+## Accessing Command Line Help
+
+### Accessing Man Pages
+
+The 'man' page for 'man' (```man man```) shows the section numbers of the manual followed by the types of pages they contain.
+
+    1 * Executable programs or shell commands
+    2   System calls (functions provided by the kernel)
+    3   Library calls (functions within program libraries)
+    4   Special files (usually found in /dev)
+    5 * File formats and conventions eg /etc/passwd
+    6   Games
+    7   Miscellaneous (including macro packages and conventions), e.g. man(7), groff(7)
+    8 * System administration commands (usually only for root)
+    9   Kernel routines [Non standard]
+
+e.g.
+```sh
+man crontab # to see command details
+man 5 crontab # to see file format details
+```
+
+### Working with Info Pages
+
+```sh
+info ls
+# page down to item below * Menu: and hit enter
+# hit 'b' to go back to top of page
+# hit 'u' to go up a level
+```
+
+### Using version controlwith RCS
+
+Create simple script hello.sh, then
+```sh
+ci hello.sh # ci for 'c'heck 'i'n
+# enter a comment, followed by a dot on new line to end comment
+>> initial version
+>> .
+# view history
+rlog -b hello.sh
+# to edit use 'c'heck 'o'ut
+co -l hello.sh
+# make a change then 'c'heck back 'i'n
+ci hello.sh
+>> modified message
+>> .
+!$
+# to checkout a particular version
+co -l -r1.1 hello.sh
+```
+
+## Understanding File Permissions
+
+Linux ACLs (access control lists) asre built-in to Centos7
+
+### Listing permissions
+```sh
+ls -l hello.sh,v
+stat hello.sh,v
+stat -c %A hello.sh,v
+stat -c %a hello.sh,v
+```
+
+### Managing default permissions
+
+Use umask to specify permissions to be **removed/blocked** from the default permissions, which are 666 for files and 777 for directories
+```sh
+umask 27
+touch file1 # should be rw-r-----
+umask 77
+touch file4 # should be -rw-------
+```
