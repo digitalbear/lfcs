@@ -65,7 +65,7 @@ systemctl isolate graphical.target
 
 Reboot server.  This will show an extra option (the latest kernel) at boot time and will use this as default.  Login as "tux"
 
-Within the graphical emulator open terminal then as super user add VBox guest additions
+Within the graphical emulator open terminal then as super user add VBox guest additions (from Device menu select "Install Guest Additions CD image" - this will make image available but will need to be run as root)
 ```sh
 su -
 mount # to view devices
@@ -580,4 +580,24 @@ umask 27
 touch file1 # should be rw-r-----
 umask 77
 touch file4 # should be -rw-------
+```
+
+### Setting permissions
+```sh
+chmod 764 file1 # octal notation
+chmod u=rwx,g=rw,o=r file1 # symbolic notation
+chmod a+x file2 # give everyone execute permission
+chmod o= file2 # remove all permissions for other
+```
+
+Sticky bit
+```sh
+chmod +t /usr/local/tmp # set the sticky bit on a directory
+chmod 1777 /usr/local/tmp # same as above, using octal notation
+```
+
+### Managing File Ownership
+```sh
+newgrp wheel # set the primary group of the current user.  NB this creates a new shell and logs user in.  Input exit to get back.
+cp -a file2 /tmp/file2a # to keep the file permissions
 ```
