@@ -601,3 +601,156 @@ chmod 1777 /usr/local/tmp # same as above, using octal notation
 newgrp wheel # set the primary group of the current user.  NB this creates a new shell and logs user in.  Input exit to get back.
 cp -a file2 /tmp/file2a # to keep the file permissions
 ```
+
+## Access the Root Account
+
+### Using su
+"su' stands for *substitute user* (not super user)  
+
+Dollar prompt usually indicates standard (non-root) user   
+```sh
+su # without any parameters will logon as root - home directory and environment variables will not change 
+id # to view details associated with logged on user
+exit
+su - # (short for su -l) will logon as root - home directory and environment variables will change as for root user
+```
+Hash prompt associated with root user
+
+### Delegation Using sudo
+
+Does not require divulging the root password to user  
+
+Access is delegated via the sudoers file.  This is not edited directly with vi, but rather with visudo
+```sh
+sudo visudo # file is located at /etc/sudoers - we do not need to specify
+```
+
+Add entry
+```sh
+tux ALL=(root) ALL
+# tux is the user.  If this was prefixed with % this would refer to the tux group
+# first "ALL" refers to any host that the connection originates from
+# sudo 'as' (root)
+# second "ALL" refers to the commands that user tux is allowed to run
+```
+Aliases
+```sh
+# Can be created for users or commands.  Case sensitive.  Alias names must be uppercase
+User_Alias HELPDESK = user1, user2
+Cmnd_Alias HELPCOMMANDS = /usr/sbin/useradd, /usr/bin/passwd
+HELPDESK ALL=(root) HELPCOMMANDS # all helpdesk users can execute these specific commands
+```
+
+### Restricting root access to SSH
+
+Edit ssh daemon config
+```sh
+vi /etc/ssh/sshd_config
+# uncomment and set: PermitRootLogin no
+# save and exit
+# restart ssh daemon
+systemctl restart sshd
+```  
+_warning: do not do this unless you have some other way of logging in to your server_
+
+## Accessing Servers with SSH
+
+### Configuring the SSH Client
+Create config file in ~/.ssh directory
+```sh
+vi ~/.ssh/config
+# add the following lines:
+Host server2
+  HostName 192.168.56.102
+  User root
+  Port 22
+```
+
+### Using Key Based Authentication
+Create rsa key pair
+```sh
+ssh-keygen -t rsa
+# default keys generated
+#  private: id_rsa
+#  public: id_rsa.pub
+# Copy public key to remote server
+ssh-copy-id -i id_rsa.pub server2
+```
+Using SSH agent
+```sh
+ssh-agent bash # open in a new shell
+ssh-add # should prompt for passphrase, if we used one, and will cache the credentials in the SSH agent
+# update /etc/ssh/sshd_config to only allow root login with keys: PermitRootLogin without-password
+```
+
+### Copy Files Securely
+
+Using Aliases (in ~/.ssh/config)
+```sh
+# scp <local file> <host alias>:<remote directory>
+scp /etc/hosts server2:/tmp
+# or in the reverse direction
+# scp <host alias>:<remote director/file> <local directory>
+scp server2:/tmp/hosts .
+```
+
+On Windows use WinSCP GUI tool
+
+## Using Screen and Script
+
+### Using Script as Collaboration Tool
+
+This will record all commands and output between typing _script_ and _exit_
+```sh
+script
+ls
+ls -a
+ls -A
+exit
+```
+
+Create a named pipe
+```sh
+mkfifo /tmp/mypipe
+script -f /tmp/mypipe
+# in a second terminal
+cat /tmp/mypipe
+# now, any commands entered in first terminal will be immediately visible in second terminal.
+# type exit in second terminal to end 
+```
+Would have been really useful in the past, but probably just do a screenshare now.
+
+
+### Running Commans Across Your Estate with Screen
+
+```sh
+yum install -y screen
+screen
+# create a screen config file in home directory - to control what screens are set-up when you type screen
+vi .screenrc
+# with contents
+screen -t s1 0 bash
+screen -t s2 1 ssh server2
+# save and exit, then type:
+screen
+# this should create screen 0 in current shell, and screen 1 logged on to server2
+# ctrl-a n for Next (press ctrl and a together, let go then press n or p or shift-")
+# ctrl-a p for Previous
+# ctrl-a " to list screens
+exit # to get out of screen
+```
+To install or run a command across multiple servers using screen
+```sh
+# use .screenrc file to define list of servers
+ctrl-a : # (ctrl-a colon) will bring a command prompt to bottom of current screen, type the following:
+:at "#" stuff "yum install -y zsh^M"
+# "#" for all screens in .screenrc
+# "stuff" to stuff commands into screen buffer
+# finish off with end-of-line character
+```
+
+
+[Next: Linux Operation Essentials](./2_linux_operation_essentials.md)
+
+
+
