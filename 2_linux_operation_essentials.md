@@ -59,17 +59,111 @@ systemctl isolate multi-user.target # run level 3 - multi-user, same a graphical
 systemctl isolate rescue.target # single user level 1, will lose network connections
 ```
 
-### Selection Runlevels at Boot
+### Selecting Runlevels at Boot
 * Start up virtual instance (must be powered off first)
-* click _e_ to edit the default kernal (default entry)
+* click _e_ to edit the default kernel (default entry)
 * scroll down to the line starting "linux16"
 * navigate to end of line using ctrl-e and append:
   * "1" or preferrably,
   * "systemd.unit=rescue.target"
 * ctrl-x (or F10) to exit and continue booting
 
+## The Boot Process
 
+### Managing GRUB Recovery
 
+```sh
+vi /etc/default/grub
+# set GRUB_DISABLE_RECOVERY="false" to enable recovery mode
+grub2-mkconfig -o /boot/grub2/grub.cfg
+reboot
+```
+
+### Recover Lost Root Passwords
+* Reboot machine
+* At boot option inout _e_ at kernel entry to edit
+* scroll down to the line starting "linux16"
+* navigate to end of line using ctrl-e and:
+  * remove: rhgb quiet  # so we can see the boot process
+  * append: rd.break enforcing=0
+* ctrl-x
+```sh
+switch_root:/# mount -o remount,rw /sysroot # to remount root filesystem - currently set as readonly - need it read-right so we can set the password
+chroot /sysroot # to set a false root which points through to the sysroot directory
+# we are no working with real filesystem, which was previously mounted into sysroot
+passwd # to reset password
+# assuming no error...
+exit # get out of chroot environment
+# up arrow to retrieve mount command and edit
+mount -o remount,ro /sysroot
+exit # to exit and continue with boot process
+# logon using the new password
+restorecon /etc/shadow # since password was set outside of normal security context
+setenforce 1 # selinux 
+```
+
+## Managing GRUB2
+GRUB - GRand Unified Bootloader
+
+### Re-installing GRUB
+```sh
+# as root
+grub2-install /dev/sda # install into the master boot record - /dev/sda on Centos 7
+```
+
+### Manage GRUB2 Defaults
+```sh
+vi /etc/default/grub
+# make changes and exit - then run
+grub2-mkconfig -o /boot/grub2/grub.cfg
+```
+
+### Manage GRUB2 with grubby
+```sh
+grubby --default-kernel
+grubby --set-default /boot/vmlinuz-3.10.0-514.el7.x86_64
+grubby --default-kernel
+grubby --info=ALL
+grubby --info /boot/vmlinuz-3.10.0-514.el7.x86_64
+grubby --remove-args="rhgb quiet" --update-kernel !$
+reboot
+```
+
+### Password Protect GRUB2
+Cleartext password
+```sh
+cp /etc/grub.d/01_users .
+cd /etc/grub.d
+vi 01_users # replace contents with the following (minus hash symbols)
+# #!/bin/sh -e
+# cat << EOF
+#    set superusers="andrew"
+#    password andrew L1nux
+# EOF
+grub2-mkconfig -o /boot/grub2/grub.cfg
+reboot
+# when we click _e_ to edit boot option this will now ask for a user and password
+```
+Encrypted password
+```sh
+grub2-mkpasswd-pbkdf2 # this will output a password hash - copy this to the clipboard
+vi /etc/grub.d/01_users
+# #!/bin/sh -e
+# cat << EOF
+#     set superusers="andrew"
+#     password_pbkdf2 andrew grub.pbkdf2.sha512.10000.DDF4EAC30F5A9BB6809BF9E02C384E1B335CA469584CE6855069CE8FF991CDE85E114A18AA27D1EE9ED269F5B8C357A9CDFD886B03F4D80FB69565EBEE1F0A53.F7E4269A1746100DD4254B73AC9872A17EA0D1DAF1CFD282D9F99A99B13DC88C1B5579653831BA54894DCD3794C96405EFD646E52FF12D9A7A043C364F394B6C
+# EOF
+grub2-mkconfig -o /boot/grub2/grub.cfg
+reboot
+```
+
+### Custom GRUB2 Entries
+```sh
+vi /etc/grub.d/40_custom
+# add details as required
+grub2-mkconfig -o /boot/grub2/grub.cfg
+reboot
+```
 
 
 
