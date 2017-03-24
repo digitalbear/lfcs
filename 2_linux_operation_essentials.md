@@ -165,6 +165,99 @@ grub2-mkconfig -o /boot/grub2/grub.cfg
 reboot
 ```
 
+## Managing Linux Processes
+
+### Listing Processes with ps
+```sh
+ps
+# BSD format 
+ps aux
+# UNIX format
+ps -f # full listing
+ps -F # extra full listing
+ps -l # long listing
+ps -e # list everything
+pstree
+```
+
+### The /proc directory and the $$ variable
+```sh
+# $$ variable show the process id of the current process (the bash shell)
+ps -p $$ -f
+# double check
+ps
+echo $$
+# we can see this also in the /proc directory
+cd /proc
+cd $$
+```
+
+### Send Signals with kill
+```sh
+stty -a # to view keyboard shortcuts for sending signals
+kill -l # to see the signals that can be sent to a process
+kill -15 PID # terminate
+kill -9 PID # signal cannot be caught so will always execute
+```
+
+### Shortcuts with pgrep, pkill, and top
+```sh
+pgrep sshd # list process id of sshd processes
+ps -F -p $(pgrep sshd)
+# above is actually better than "ps -eF | grep sshd" as it includes headers and doesn't incude itself
+# create some background sleep processes
+sleep 100&
+sleep 100&
+sleep 100&
+pgrep sleep # to list these
+pkill sleep # to kill these
+```
+
+```sh
+top
+# "f" to show menu of what to sort by
+# arrow up or down then "s" and escape to select
+# "q" to quit
+```
+
+## Process Priority
+
+### Backgrounding Tasks
+```sh
+sleep 1000&
+jobs
+sleep 1000 # without the ampersand
+(ctrl-z) # to move task to background, suspended
+jobs # this will show both our sleep jobs - the most recently one with a "+" symbol next to it - this means it has focus
+bg # to resume the job in the background - the job that has focus
+jobs
+fg # to bring a currently in focus background job into the foreground
+fg <nr> to bring job <nr> to the foreground
+```
+
+### Configuring Process Priority using nice
+```sh
+ps -l
+# Columns PRI (priority) and NI (nice) should show 80 and 0 respectively for our sleep jobs
+# Process Priority can be between 60 (high) and 99 (low) - default 80
+# Nice can be between -20 and +19 - default 0
+# manually set the nice value
+nice -n 1 sleep 1000 &
+renice -n 10 -p 2930 # where -p is PID
+# only root can set priority lower than current value or nice value less than zero
+# edit default values in the following file
+vi /etc/security/limits.conf
+# and add the following line
+# tux - priority 10 # for a group add @ at start, or use * for all users
+su - tux # to start a new shell
+sleep 250&
+ps -l # see new processes showing default priority of 10
+```
+
+
+
+
+
 
 
 Next: [Linux User and Group Management](./3_linux_user_and_group_management.md) 
