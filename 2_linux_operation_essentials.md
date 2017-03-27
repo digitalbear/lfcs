@@ -235,7 +235,7 @@ fg # to bring a currently in focus background job into the foreground
 fg <nr> to bring job <nr> to the foreground
 ```
 
-### Configuring Process Priority using nice
+### Configuring Process Priority using 'nice'
 ```sh
 ps -l
 # Columns PRI (priority) and NI (nice) should show 80 and 0 respectively for our sleep jobs
@@ -254,9 +254,73 @@ sleep 250&
 ps -l # see new processes showing default priority of 10
 ```
 
+## Monitor Linux Performance
 
+```sh
+rpm -ql procps-ng # get listing of items included in procps-ng (next-generation package for monitoring processes)
+rpm -ql procps-ng | grep '^/usr/bin/' # to see all 'programs' installed as part of this package
+rpm -gf /usr/bin/ps # (-qf: query file) see that ps command is actually part of procps-ng package
+```
 
+### pwdx and pmap commands
+```sh
+free -h # free/used memory
+# process memory map
+pmap $$ 
+# report current working directory of a process
+pwdx $$
+pwdx $(pgrep sshd)
+```
 
+### uptime and tload
+```sh
+uptime
+lscpu # list cpu's
+cat /proc/uptime # showing up time in seconds (left) and idle time (right) (idle time > up time suggests more than one cpu)
+cat /proc/loadavg
+# to view uptime over a period
+watch -n 4 uptime
+tload # shows load over one, five, and fifteen minute averages
+```
+
+### top and vmstat
+```sh
+top # interactive mode
+top -b -n1 # batch mode , 1 iteration
+vmstat 
+vmstat -S k # show in Kilobytes
+vmstat -S m # show in Megabytes
+vmstat 5 3 # show 3 iterations with a 5 second interval
+```
+
+## Using Sysstat to Monitor Performance
+
+### Installing sysstat
+```sh
+# as root
+yum install -y sysstat
+cat /etc/cron.d/sysstat
+cat /etc/sysconfig/sysstat
+systemctl start sysstat
+systemctl enable sysstat
+```
+
+```sh
+iostat -m
+pidstat -p $$ 5 3 #
+mpstat -P ALL 2 3 # cpu status
+```
+
+### Reporting using sar (System Activity Reporter)
+```sh
+sar -u # CPU
+sar -r # Memory
+sar -n DEV # Network
+sar -q # load averages
+sar -s 14:00:00 -e 15:00:00 # between start and end times
+ls -l /var/log/sa/ # file sa28 found, corresponds to today's date 28th day of the month
+sar -f /var/log/sa/sa28 # for a particular file, i.e. day
+```
 
 
 
