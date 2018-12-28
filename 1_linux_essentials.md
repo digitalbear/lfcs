@@ -122,7 +122,7 @@ ls -l /dev/pts/1
 # is the same as
 ls -l $(tty)
 # list block devices (disks and partitions)
-lsb
+lsblk
 ```
 
 Wildcard searching
